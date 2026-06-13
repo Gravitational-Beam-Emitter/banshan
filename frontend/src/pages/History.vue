@@ -69,6 +69,11 @@ function clearAll() {
             {{ record.symptom }}
           </span>
           <div class="flex items-center gap-3 shrink-0">
+            <span class="flex gap-1" title="绿/黄/红分析结果">
+              <span class="w-2 h-2 rounded-full bg-green-400"></span>
+              <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+              <span class="w-2 h-2 rounded-full bg-red-400"></span>
+            </span>
             <span class="text-sm text-gray-400">
               {{ formatTime(record.createdAt) }}
             </span>
