@@ -50,7 +50,7 @@ function copyLevel(key) {
   <div class="space-y-4 mt-6">
     <div class="flex justify-end">
       <button
-        class="text-xs text-gray-400 hover:text-gray-600 transition"
+        class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition"
         @click="copyResult"
       >
         {{ copied ? '已复制' : '复制结果' }}
@@ -62,20 +62,20 @@ function copyLevel(key) {
       :class="['border rounded-lg p-5 transition-all duration-300 hover:shadow-md', level.color]"
     >
       <div class="flex items-center justify-between mb-2">
-        <h3 class="text-lg font-semibold">
+        <h3 class="text-xl font-semibold">
           {{ LEVEL_LABELS[level.key] }}
         </h3>
         <button
-          class="text-xs text-gray-400 hover:text-gray-600 transition shrink-0 ml-2"
+          class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition shrink-0 ml-2"
           @click.stop="copyLevel(level.key)"
         >
           {{ copiedLevel === level.key ? '已复制' : '复制' }}
         </button>
       </div>
-      <p class="text-sm mb-3 opacity-90">
+      <p class="text-base mb-3 opacity-90">
         {{ result[level.key]?.explanation }}
       </p>
-      <ul class="list-disc list-inside text-sm space-y-1">
+      <ul class="list-disc list-inside text-base space-y-1">
         <li v-for="(action, i) in result[level.key]?.actions" :key="i">
           {{ action }}
         </li>

@@ -1,9 +1,9 @@
 <!--
   半山项目 - Home.vue
   功能简述：首页，症状输入 + 分析结果展示
-  版本: 0.3.0
+  版本: 0.4.0
   最后修改: 2026-06-13
-  修改说明: 添加年龄性别输入，profile 持久化
+  修改说明: 话题卡片引导、字号对比度升级
 -->
 <script setup>
 import { ref, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
@@ -20,6 +20,36 @@ const result = ref(null)
 const error = ref('')
 const elapsed = ref(0)
 const resultEl = ref(null)
+const showInput = ref(false)
+
+const topics = [
+  {
+    label: '这个年纪，身体在发生哪些变化？',
+    prompt: '我想了解，在我这个年龄段，身体通常会发生哪些正常的退行性变化？哪些是需要特别留意的信号？',
+  },
+  {
+    label: '睡眠变浅了，正常吗？',
+    prompt: '我最近睡眠质量下降，入睡困难/容易醒/醒得早。这个年纪睡眠变差是正常的吗？怎么改善？',
+  },
+  {
+    label: '精力不如以前了，怎么办？',
+    prompt: '感觉精力明显下降，容易疲劳，恢复得慢。这个年纪应该怎么调整生活方式来保持精力？',
+  },
+  {
+    label: '饮食和运动要怎么调整？',
+    prompt: '到了这个年纪，饮食结构和运动方式应该做什么调整？有哪些需要特别注意的？',
+  },
+  {
+    label: '该开始做哪些体检项目？',
+    prompt: '以我的年龄和性别，应该开始定期做哪些体检项目？频率是怎样的？',
+  },
+]
+
+function selectTopic(topic) {
+  symptom.value = topic.prompt
+  showInput.value = false
+  submit()
+}
 
 const PROFILE_KEY = 'banshan_profile'
 const DRAFT_KEY = 'banshan_draft'
@@ -55,14 +85,19 @@ const placeholder = ref(placeholders[0])
 let placeholderTimer = null
 
 onMounted(() => {
-  // 恢复草稿
+  // 恢复草稿或 reanalyze 时展开输入框
   if (!route.query.symptom) {
     const draft = localStorage.getItem(DRAFT_KEY)
-    if (draft) symptom.value = draft
+    if (draft) {
+      symptom.value = draft
+      showInput.value = true
+    }
+  }
+  if (route.query.symptom) {
+    showInput.value = true
   }
   checkReanalyze()
   startPlaceholderRotation()
-  // 页面标题
   document.title = '半山 - 健康自检'
 })
 onActivated(() => {
@@ -98,12 +133,6 @@ watch(result, async (val) => {
     resultEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 })
-
-const examples = [
-  '最近三天头疼，太阳穴胀痛，睡眠不好',
-  '吃完饭后胃胀，偶尔反酸，持续一周',
-  '右膝盖上下楼时疼，不肿，两个月了',
-]
 
 const HISTORY_KEY = 'banshan_history'
 
@@ -189,60 +218,79 @@ async function submit() {
 <template>
   <div class="max-w-2xl mx-auto px-4 py-8">
     <h1 class="text-3xl font-bold text-center mb-2">半山</h1>
-    <p class="text-gray-500 text-center mb-8">健康自检 · AI 辅助评估</p>
-
-    <textarea
-      v-model="symptom"
-      class="w-full h-32 p-4 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-400"
-      :placeholder="placeholder"
-      @keydown.ctrl.enter="submit"
-    ></textarea>
-    <p class="text-right text-xs text-gray-400 dark:text-gray-500 mt-1">
-      {{ symptom.length }} 字 · Ctrl+Enter 提交
+    <p class="text-gray-600 dark:text-gray-400 text-center mb-8 text-lg">
+      了解身体变化，从容面对初老
     </p>
 
-    <div class="flex items-center gap-3 mt-3">
-      <label class="text-xs text-gray-400 dark:text-gray-500 shrink-0">
-        年龄
-      </label>
-      <input
-        v-model="age"
-        type="number"
-        min="1"
-        max="120"
-        placeholder="选填"
-        class="w-16 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-      />
-      <label class="text-xs text-gray-400 dark:text-gray-500 shrink-0 ml-3">
-        性别
-      </label>
-      <div class="flex gap-1">
-        <button
-          v-for="opt in ['男', '女', '不填']"
-          :key="opt"
-          :class="[
-            'text-xs px-2.5 py-1 rounded transition',
-            gender === opt || (opt === '不填' && !gender)
-              ? 'bg-green-500 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600',
-          ]"
-          @click="gender = opt === '不填' ? '' : opt"
-        >
-          {{ opt }}
-        </button>
-      </div>
+    <!-- Topic cards -->
+    <div v-if="!result && !loading && !error && !showInput" class="space-y-3">
+      <button
+        v-for="topic in topics"
+        :key="topic.label"
+        class="w-full text-left p-5 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl hover:border-green-400 dark:hover:border-green-500 hover:shadow transition text-lg"
+        @click="selectTopic(topic)"
+      >
+        {{ topic.label }}
+      </button>
+      <button
+        class="w-full text-center p-4 text-gray-600 dark:text-gray-400 border border-dashed dark:border-gray-700 rounded-xl hover:border-green-400 dark:hover:border-green-500 transition text-lg"
+        @click="showInput = true"
+      >
+        自己描述...
+      </button>
     </div>
 
-    <button
-      :disabled="loading"
-      class="w-full mt-3 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50"
-      @click="submit"
-    >
-      {{ loading ? '分析中...' : '开始分析' }}
-    </button>
-    <p class="text-center text-xs text-gray-400 dark:text-gray-600 mt-2">
-      AI 辅助评估，不构成医疗诊断，仅供参考
-    </p>
+    <!-- Input area -->
+    <div v-if="showInput || result || loading">
+      <textarea
+        v-model="symptom"
+        class="w-full h-32 p-4 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-400 text-lg"
+        :placeholder="placeholder"
+        @keydown.ctrl.enter="submit"
+      ></textarea>
+      <p class="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
+        {{ symptom.length }} 字 · Ctrl+Enter 提交
+      </p>
+
+      <div class="flex items-center gap-3 mt-3">
+        <label class="text-sm text-gray-600 dark:text-gray-400 shrink-0">年龄</label>
+        <input
+          v-model="age"
+          type="number"
+          min="1"
+          max="120"
+          placeholder="选填"
+          class="w-16 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1 text-base focus:outline-none focus:ring-2 focus:ring-green-400"
+        />
+        <label class="text-sm text-gray-600 dark:text-gray-400 shrink-0 ml-3">性别</label>
+        <div class="flex gap-1">
+          <button
+            v-for="opt in ['男', '女', '不填']"
+            :key="opt"
+            :class="[
+              'text-sm px-3 py-1.5 rounded transition',
+              gender === opt || (opt === '不填' && !gender)
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600',
+            ]"
+            @click="gender = opt === '不填' ? '' : opt"
+          >
+            {{ opt }}
+          </button>
+        </div>
+      </div>
+
+      <button
+        :disabled="loading"
+        class="w-full mt-3 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition disabled:opacity-50 text-lg"
+        @click="submit"
+      >
+        {{ loading ? '分析中...' : '开始分析' }}
+      </button>
+      <p class="text-center text-sm text-gray-500 dark:text-gray-600 mt-2">
+        AI 辅助评估，不构成医疗诊断，仅供参考
+      </p>
+    </div>
 
     <!-- Loading skeleton -->
     <div v-if="loading" class="mt-6 space-y-4">
@@ -257,10 +305,10 @@ async function submit() {
         <div class="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div>
       </div>
       <div v-if="streamingText" class="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">
           AI 正在思考（{{ streamingText.length }} 字符）...
         </p>
-        <pre class="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans">{{ streamingText }}</pre>
+        <pre class="text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-sans">{{ streamingText }}</pre>
       </div>
     </div>
 
@@ -268,7 +316,7 @@ async function submit() {
     <div v-if="error" class="text-center mt-6">
       <p class="text-red-500 mb-3">{{ error }}</p>
       <button
-        class="text-sm text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 underline"
+        class="text-base text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 underline"
         @click="submit"
       >
         重试
@@ -277,27 +325,11 @@ async function submit() {
 
     <!-- Analysis result -->
     <div v-if="result" ref="resultEl" class="animate-fade-in">
-      <p v-if="elapsed" class="text-center text-xs text-gray-400 dark:text-gray-600 mt-2">
+      <p v-if="elapsed" class="text-center text-sm text-gray-500 dark:text-gray-500 mt-2">
         分析耗时 {{ elapsed }} 秒
       </p>
       <ResultCard :result="result" />
     </div>
 
-    <!-- Empty state hint -->
-    <div v-if="!result && !loading && !error" class="text-center mt-8">
-      <p class="text-gray-400 dark:text-gray-500 mb-4">
-        输入症状后点击「开始分析」，AI 会给出三色评估
-      </p>
-      <div class="flex flex-wrap justify-center gap-2">
-        <button
-          v-for="(ex, i) in examples"
-          :key="i"
-          class="text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-full px-4 py-1.5 hover:border-green-400 hover:text-green-600 dark:hover:text-green-400 transition"
-          @click="symptom = ex"
-        >
-          {{ ex }}
-        </button>
-      </div>
-    </div>
   </div>
 </template>
