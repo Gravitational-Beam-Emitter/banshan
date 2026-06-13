@@ -1,20 +1,31 @@
 <!--
   半山项目 - History.vue
   功能简述：历史记录页，展示过去的分析结果
-  版本: 0.1.0
+  版本: 0.2.0
   最后修改: 2026-06-13
-  修改说明: 实现列表展示、点击展开详情、清空功能
+  修改说明: 修复 KeepAlive 同步问题，添加搜索过滤
 -->
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onActivated } from 'vue'
 import ResultCard from '../components/ResultCard.vue'
 
 const HISTORY_KEY = 'banshan_history'
 const records = ref([])
 const expandedId = ref(null)
+const searchQuery = ref('')
 
-onMounted(() => {
+function loadRecords() {
   records.value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+}
+
+onMounted(loadRecords)
+// KeepAlive 缓存后重新激活时同步数据
+onActivated(loadRecords)
+
+const filtered = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase()
+  if (!q) return records.value
+  return records.value.filter(r => r.symptom.toLowerCase().includes(q))
 })
 
 function toggle(id) {
@@ -45,7 +56,7 @@ function clearAll() {
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">历史记录</h1>
       <button
-        v-if="records.length"
+        v-if="filtered.length"
         class="text-sm text-red-500 hover:text-red-700"
         @click="clearAll"
       >
@@ -53,13 +64,23 @@ function clearAll() {
       </button>
     </div>
 
+    <!-- Search -->
+    <input
+      v-if="records.length"
+      v-model="searchQuery"
+      class="w-full border rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
+      placeholder="搜索症状..."
+    />
+
     <!-- Empty -->
-    <p v-if="!records.length" class="text-gray-500">还没有分析记录</p>
+    <p v-if="!filtered.length" class="text-gray-500">
+      {{ records.length ? '没有匹配的记录' : '还没有分析记录' }}
+    </p>
 
     <!-- List -->
     <div v-else class="space-y-3">
       <div
-        v-for="record in records"
+        v-for="record in filtered"
         :key="record.id"
         class="bg-white rounded-lg border p-4 cursor-pointer hover:shadow transition"
         @click="toggle(record.id)"
