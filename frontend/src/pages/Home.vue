@@ -142,7 +142,13 @@ async function submit() {
     }
     saveToHistory(text, data)
   } catch (e) {
-    error.value = ERRORS.apiFailed
+    if (e.name === 'AbortError') {
+      error.value = '请求超时，请检查网络后重试'
+    } else if (e.message) {
+      error.value = e.message
+    } else {
+      error.value = ERRORS.apiFailed
+    }
     console.error(e)
   } finally {
     loading.value = false

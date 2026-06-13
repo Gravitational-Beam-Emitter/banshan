@@ -4,6 +4,7 @@ import { RouterView, RouterLink } from 'vue-router'
 import { getApiKey, setApiKey, hasApiKey } from './utils/api.js'
 
 const showSettings = ref(false)
+const showHelp = ref(false)
 const keyInput = ref('')
 const keySaved = ref(false)
 const dark = ref(localStorage.getItem('banshan_dark') === '1')
@@ -18,7 +19,17 @@ onMounted(() => {
   if (!hasApiKey()) {
     showSettings.value = true
   }
+  document.addEventListener('keydown', onKey)
 })
+
+function onKey(e) {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+  if (e.key === '?') {
+    e.preventDefault()
+    showHelp.value = !showHelp.value
+  }
+  if (e.key === 'Escape') showHelp.value = false
+}
 
 function toggleDark() {
   dark.value = !dark.value
@@ -95,6 +106,28 @@ function closeSettings() {
           <button @click="closeSettings" class="flex-1 py-2 text-sm text-gray-500 dark:text-gray-400 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">取消</button>
           <button @click="saveKey" class="flex-1 py-2 text-sm text-white bg-green-500 rounded-lg hover:bg-green-600">保存</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div v-if="showHelp" class="fixed inset-0 z-50 flex items-center justify-center bg-black/30" @click.self="showHelp = false">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl">
+        <h2 class="text-lg font-semibold mb-3 dark:text-white">快捷键</h2>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">提交分析</span>
+            <kbd class="bg-gray-100 dark:bg-gray-700 px-2 rounded text-xs">Ctrl + Enter</kbd>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">帮助面板</span>
+            <kbd class="bg-gray-100 dark:bg-gray-700 px-2 rounded text-xs">?</kbd>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">关闭弹窗</span>
+            <kbd class="bg-gray-100 dark:bg-gray-700 px-2 rounded text-xs">Esc</kbd>
+          </div>
+        </div>
+        <button @click="showHelp = false" class="mt-4 w-full py-2 text-sm text-gray-500 dark:text-gray-400 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">关闭</button>
       </div>
     </div>
   </div>

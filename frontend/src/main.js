@@ -9,12 +9,14 @@ import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from './pages/Home.vue'
 import History from './pages/History.vue'
+import NotFound from './pages/NotFound.vue'
 import App from './App.vue'
 import './style.css'
 
 const routes = [
   { path: '/', component: Home },
   { path: '/history', component: History },
+  { path: '/:pathMatch(.*)*', component: NotFound },
 ]
 
 const router = createRouter({
