@@ -21,7 +21,10 @@ function loadRecords() {
   records.value = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
 }
 
-onMounted(loadRecords)
+onMounted(() => {
+  loadRecords()
+  document.title = '半山 - 历史记录'
+})
 // KeepAlive 缓存后重新激活时同步数据
 onActivated(loadRecords)
 

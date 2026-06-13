@@ -6,7 +6,7 @@
   修改说明: 添加示例症状引导、分析耗时显示
 -->
 <script setup>
-import { ref, onMounted, onActivated, onDeactivated } from 'vue'
+import { ref, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { analyzeSymptomStream, hasApiKey } from '../utils/api.js'
 import { ERRORS } from '../shared/strings.js'
@@ -19,6 +19,13 @@ const streamingText = ref('')
 const result = ref(null)
 const error = ref('')
 const elapsed = ref(0)
+const resultEl = ref(null)
+
+const DRAFT_KEY = 'banshan_draft'
+// 草稿自动保存
+watch(symptom, (val) => {
+  localStorage.setItem(DRAFT_KEY, val)
+})
 
 const placeholders = [
   '描述你的身体感受，越具体越好...',
@@ -30,8 +37,15 @@ const placeholder = ref(placeholders[0])
 let placeholderTimer = null
 
 onMounted(() => {
+  // 恢复草稿
+  if (!route.query.symptom) {
+    const draft = localStorage.getItem(DRAFT_KEY)
+    if (draft) symptom.value = draft
+  }
   checkReanalyze()
   startPlaceholderRotation()
+  // 页面标题
+  document.title = '半山 - 健康自检'
 })
 onActivated(() => {
   checkReanalyze()
@@ -58,6 +72,14 @@ function startPlaceholderRotation() {
     i++
   }, 4000)
 }
+
+// 结果出现时自动滚动
+watch(result, async (val) => {
+  if (val) {
+    await nextTick()
+    resultEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+})
 
 const examples = [
   '最近三天头疼，太阳穴胀痛，睡眠不好',
@@ -187,7 +209,7 @@ async function submit() {
     </div>
 
     <!-- Analysis result -->
-    <div v-if="result" class="animate-fade-in">
+    <div v-if="result" ref="resultEl" class="animate-fade-in">
       <p v-if="elapsed" class="text-center text-xs text-gray-400 dark:text-gray-600 mt-2">
         分析耗时 {{ elapsed }} 秒
       </p>
