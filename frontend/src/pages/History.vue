@@ -122,6 +122,12 @@ function clearAll() {
               <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
               <span class="w-2 h-2 rounded-full bg-red-400"></span>
             </span>
+            <span
+              v-if="record.profile?.age || record.profile?.gender"
+              class="text-xs text-gray-400 dark:text-gray-500"
+            >
+              {{ [record.profile.age ? record.profile.age + '岁' : '', record.profile.gender || ''].filter(Boolean).join(' ') }}
+            </span>
             <span class="text-sm text-gray-400">
               {{ formatTime(record.createdAt) }}
             </span>

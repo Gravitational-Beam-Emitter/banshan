@@ -1,9 +1,9 @@
 <!--
   半山项目 - Home.vue
   功能简述：首页，症状输入 + 分析结果展示
-  版本: 0.2.0
+  版本: 0.3.0
   最后修改: 2026-06-13
-  修改说明: 添加示例症状引导、分析耗时显示
+  修改说明: 添加年龄性别输入，profile 持久化
 -->
 <script setup>
 import { ref, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
@@ -21,7 +21,25 @@ const error = ref('')
 const elapsed = ref(0)
 const resultEl = ref(null)
 
+const PROFILE_KEY = 'banshan_profile'
 const DRAFT_KEY = 'banshan_draft'
+
+const age = ref('')
+const gender = ref('')
+
+function loadProfile() {
+  const saved = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}')
+  age.value = saved.age || ''
+  gender.value = saved.gender || ''
+}
+function saveProfile() {
+  localStorage.setItem(PROFILE_KEY, JSON.stringify({
+    age: age.value, gender: gender.value,
+  }))
+}
+loadProfile()
+watch([age, gender], saveProfile)
+
 // 草稿自动保存
 watch(symptom, (val) => {
   localStorage.setItem(DRAFT_KEY, val)
@@ -89,12 +107,22 @@ const examples = [
 
 const HISTORY_KEY = 'banshan_history'
 
+function buildUserMessage() {
+  const parts = [symptom.value.trim()]
+  const meta = []
+  if (age.value) meta.push(`${age.value}岁`)
+  if (gender.value) meta.push(gender.value)
+  if (meta.length) parts.push(`\n[用户信息：${meta.join('，')}]`)
+  return parts.join('\n')
+}
+
 function saveToHistory(symptomText, analysisResult) {
   const records = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
   records.unshift({
     id: Date.now(),
     symptom: symptomText,
     result: analysisResult,
+    profile: { age: age.value, gender: gender.value },
     createdAt: new Date().toISOString(),
   })
   localStorage.setItem(HISTORY_KEY, JSON.stringify(records))
@@ -124,7 +152,8 @@ async function submit() {
   const startTime = Date.now()
 
   try {
-    const data = await analyzeSymptomStream(text, (content) => {
+    const message = buildUserMessage()
+    const data = await analyzeSymptomStream(message, (content) => {
       streamingText.value = content
       // Try to render early if JSON is complete
       try {
@@ -171,6 +200,38 @@ async function submit() {
     <p class="text-right text-xs text-gray-400 dark:text-gray-500 mt-1">
       {{ symptom.length }} 字 · Ctrl+Enter 提交
     </p>
+
+    <div class="flex items-center gap-3 mt-3">
+      <label class="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+        年龄
+      </label>
+      <input
+        v-model="age"
+        type="number"
+        min="1"
+        max="120"
+        placeholder="选填"
+        class="w-16 border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+      />
+      <label class="text-xs text-gray-400 dark:text-gray-500 shrink-0 ml-3">
+        性别
+      </label>
+      <div class="flex gap-1">
+        <button
+          v-for="opt in ['男', '女', '不填']"
+          :key="opt"
+          :class="[
+            'text-xs px-2.5 py-1 rounded transition',
+            gender === opt || (opt === '不填' && !gender)
+              ? 'bg-green-500 text-white'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600',
+          ]"
+          @click="gender = opt === '不填' ? '' : opt"
+        >
+          {{ opt }}
+        </button>
+      </div>
+    </div>
 
     <button
       :disabled="loading"
