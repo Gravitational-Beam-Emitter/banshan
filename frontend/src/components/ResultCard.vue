@@ -17,9 +17,9 @@ const props = defineProps({
 })
 
 const levels = [
-  { key: 'green', color: 'bg-green-50 border-green-300 text-green-900' },
-  { key: 'yellow', color: 'bg-yellow-50 border-yellow-300 text-yellow-900' },
-  { key: 'red', color: 'bg-red-50 border-red-300 text-red-900' },
+  { key: 'green', color: 'bg-green-50 border-green-300 text-green-900 dark:bg-green-950 dark:border-green-700 dark:text-green-200' },
+  { key: 'yellow', color: 'bg-yellow-50 border-yellow-300 text-yellow-900 dark:bg-yellow-950 dark:border-yellow-700 dark:text-yellow-200' },
+  { key: 'red', color: 'bg-red-50 border-red-300 text-red-900 dark:bg-red-950 dark:border-red-700 dark:text-red-200' },
 ]
 
 const copied = ref(false)

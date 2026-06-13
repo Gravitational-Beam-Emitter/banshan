@@ -7,7 +7,10 @@
 -->
 <script setup>
 import { ref, computed, onMounted, onActivated } from 'vue'
+import { useRouter } from 'vue-router'
 import ResultCard from '../components/ResultCard.vue'
+
+const router = useRouter()
 
 const HISTORY_KEY = 'banshan_history'
 const records = ref([])
@@ -53,6 +56,10 @@ function exportJson() {
   URL.revokeObjectURL(url)
 }
 
+function reanalyze(symptom) {
+  router.push({ path: '/', query: { symptom } })
+}
+
 function clearAll() {
   if (!window.confirm('确定要清空所有历史记录吗？')) return
   localStorage.removeItem(HISTORY_KEY)
@@ -67,7 +74,7 @@ function clearAll() {
       <h1 class="text-2xl font-bold">历史记录</h1>
       <div v-if="filtered.length" class="flex items-center gap-3">
         <button
-          class="text-sm text-gray-400 hover:text-gray-600 transition"
+          class="text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition"
           @click="exportJson"
         >
           导出
@@ -85,12 +92,12 @@ function clearAll() {
     <input
       v-if="records.length"
       v-model="searchQuery"
-      class="w-full border rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
+      class="w-full border dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-green-400"
       placeholder="搜索症状..."
     />
 
     <!-- Empty -->
-    <p v-if="!filtered.length" class="text-gray-500">
+    <p v-if="!filtered.length" class="text-gray-500 dark:text-gray-400">
       {{ records.length ? '没有匹配的记录' : '还没有分析记录' }}
     </p>
 
@@ -99,7 +106,7 @@ function clearAll() {
       <div
         v-for="record in filtered"
         :key="record.id"
-        class="bg-white rounded-lg border p-4 cursor-pointer hover:shadow transition"
+        class="bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 p-4 cursor-pointer hover:shadow transition"
         @click="toggle(record.id)"
       >
         <div class="flex items-center justify-between">
@@ -127,7 +134,17 @@ function clearAll() {
 
         <!-- Expanded detail -->
         <Transition name="expand">
-          <ResultCard v-if="expandedId === record.id" :result="record.result" />
+          <div v-if="expandedId === record.id">
+            <div class="flex justify-end mt-2">
+              <button
+                class="text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 transition"
+                @click.stop="reanalyze(record.symptom)"
+              >
+                重新分析
+              </button>
+            </div>
+            <ResultCard :result="record.result" />
+          </div>
         </Transition>
       </div>
     </div>
