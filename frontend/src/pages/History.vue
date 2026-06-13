@@ -88,7 +88,9 @@ function clearAll() {
         </div>
 
         <!-- Expanded detail -->
-        <ResultCard v-if="expandedId === record.id" :result="record.result" />
+        <Transition name="expand">
+          <ResultCard v-if="expandedId === record.id" :result="record.result" />
+        </Transition>
       </div>
     </div>
   </div>

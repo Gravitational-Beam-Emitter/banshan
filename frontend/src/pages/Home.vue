@@ -87,7 +87,11 @@ async function submit() {
       v-model="symptom"
       class="w-full h-32 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-green-400"
       placeholder="描述你的身体感受，越具体越好..."
+      @keydown.ctrl.enter="submit"
     ></textarea>
+    <p class="text-right text-xs text-gray-400 mt-1">
+      {{ symptom.length }} 字 · Ctrl+Enter 提交
+    </p>
 
     <button
       :disabled="loading"
