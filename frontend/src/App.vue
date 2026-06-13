@@ -9,6 +9,9 @@ const keySaved = ref(false)
 
 onMounted(() => {
   keyInput.value = getApiKey()
+  if (!hasApiKey()) {
+    showSettings.value = true
+  }
 })
 
 function saveKey() {

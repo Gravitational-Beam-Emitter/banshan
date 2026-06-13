@@ -7,7 +7,7 @@
 -->
 <script setup>
 import { ref } from 'vue'
-import { analyzeSymptomStream } from '../utils/api.js'
+import { analyzeSymptomStream, hasApiKey } from '../utils/api.js'
 import { ERRORS } from '../shared/strings.js'
 import ResultCard from '../components/ResultCard.vue'
 
@@ -31,6 +31,11 @@ function saveToHistory(symptomText, analysisResult) {
 }
 
 async function submit() {
+  if (!hasApiKey()) {
+    error.value = '请先点击右上角 ⚙ 设置 API Key'
+    return
+  }
+
   const text = symptom.value.trim()
   if (!text) {
     error.value = ERRORS.emptyInput
