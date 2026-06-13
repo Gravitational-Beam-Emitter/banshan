@@ -9,6 +9,7 @@
 import { ref, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { analyzeSymptomStream, hasApiKey } from '../utils/api.js'
+import { fetchHealthData, formatHealthContext } from '../utils/healthBridge.js'
 import { ERRORS } from '../shared/strings.js'
 import ResultCard from '../components/ResultCard.vue'
 
@@ -21,6 +22,7 @@ const error = ref('')
 const elapsed = ref(0)
 const resultEl = ref(null)
 const showInput = ref(false)
+const healthData = ref(null)
 
 const topics = [
   {
@@ -98,6 +100,7 @@ onMounted(() => {
   }
   checkReanalyze()
   startPlaceholderRotation()
+  loadHealthData()
   document.title = '半山 - 健康自检'
 })
 onActivated(() => {
@@ -134,6 +137,10 @@ watch(result, async (val) => {
   }
 })
 
+async function loadHealthData() {
+  healthData.value = await fetchHealthData()
+}
+
 const HISTORY_KEY = 'banshan_history'
 
 function buildUserMessage() {
@@ -142,6 +149,10 @@ function buildUserMessage() {
   if (age.value) meta.push(`${age.value}岁`)
   if (gender.value) meta.push(gender.value)
   if (meta.length) parts.push(`\n[用户信息：${meta.join('，')}]`)
+  if (healthData.value) {
+    const ctx = formatHealthContext(healthData.value)
+    if (ctx) parts.push(ctx)
+  }
   return parts.join('\n')
 }
 
