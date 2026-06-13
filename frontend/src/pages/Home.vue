@@ -110,6 +110,9 @@ async function submit() {
     >
       {{ loading ? '分析中...' : '开始分析' }}
     </button>
+    <p class="text-center text-xs text-gray-400 mt-2">
+      AI 辅助评估，不构成医疗诊断，仅供参考
+    </p>
 
     <!-- Loading skeleton -->
     <div v-if="loading" class="mt-6 space-y-4">

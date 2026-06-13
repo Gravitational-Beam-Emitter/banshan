@@ -23,6 +23,7 @@ const levels = [
 ]
 
 const copied = ref(false)
+const copiedLevel = ref(null)
 
 function copyResult() {
   const lines = levels.map(l => {
@@ -33,6 +34,15 @@ function copyResult() {
   navigator.clipboard.writeText(lines.join('\n\n'))
   copied.value = true
   setTimeout(() => { copied.value = false }, 2000)
+}
+
+function copyLevel(key) {
+  const data = props.result[key]
+  const actions = data?.actions?.map(a => `  - ${a}`).join('\n') || ''
+  const text = `【${LEVEL_LABELS[key]}】\n${data?.explanation || ''}\n${actions}`
+  navigator.clipboard.writeText(text)
+  copiedLevel.value = key
+  setTimeout(() => { copiedLevel.value = null }, 2000)
 }
 </script>
 
@@ -51,9 +61,17 @@ function copyResult() {
       :key="level.key"
       :class="['border rounded-lg p-5 transition-all duration-300 hover:shadow-md', level.color]"
     >
-      <h3 class="text-lg font-semibold mb-2">
-        {{ LEVEL_LABELS[level.key] }}
-      </h3>
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-lg font-semibold">
+          {{ LEVEL_LABELS[level.key] }}
+        </h3>
+        <button
+          class="text-xs text-gray-400 hover:text-gray-600 transition shrink-0 ml-2"
+          @click.stop="copyLevel(level.key)"
+        >
+          {{ copiedLevel === level.key ? '已复制' : '复制' }}
+        </button>
+      </div>
       <p class="text-sm mb-3 opacity-90">
         {{ result[level.key]?.explanation }}
       </p>
