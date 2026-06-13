@@ -6,10 +6,10 @@
   修改说明: 话题卡片引导、字号对比度升级
 -->
 <script setup>
-import { ref, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onActivated, onDeactivated, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { analyzeSymptomStream, hasApiKey } from '../utils/api.js'
-import { fetchHealthData, formatHealthContext } from '../utils/healthBridge.js'
+import { fetchHealthData, formatHealthContext, formatHealthSummary, hasHealthBridge } from '../utils/healthBridge.js'
 import { ERRORS } from '../shared/strings.js'
 import ResultCard from '../components/ResultCard.vue'
 
@@ -23,6 +23,7 @@ const elapsed = ref(0)
 const resultEl = ref(null)
 const showInput = ref(false)
 const healthData = ref(null)
+const healthSummary = computed(() => formatHealthSummary(healthData.value))
 
 const topics = [
   {
@@ -231,6 +232,14 @@ async function submit() {
     <h1 class="text-3xl font-bold text-center mb-2">半山</h1>
     <p class="text-gray-600 dark:text-gray-400 text-center mb-8 text-lg">
       了解身体变化，从容面对初老
+    </p>
+
+    <!-- Health data indicator -->
+    <p
+      v-if="healthSummary"
+      class="text-center text-sm text-green-600 dark:text-green-400 mb-6"
+    >
+      已连接 · {{ healthSummary }}
     </p>
 
     <!-- Topic cards -->

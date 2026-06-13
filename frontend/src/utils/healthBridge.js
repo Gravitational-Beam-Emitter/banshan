@@ -31,20 +31,42 @@ export async function fetchHealthData() {
 export function formatHealthContext(data) {
   if (!data || !Object.keys(data).length) return ''
 
-  const lines = ['\n[健康数据（近7日）]']
+  const lines = ['\n[可穿戴设备数据（近7日）]']
 
   if (data.sleep?.avgHoursPerNight) {
-    lines.push(`- 平均睡眠: ${data.sleep.avgHoursPerNight} 小时/晚`)
+    lines.push(`- 平均睡眠: ${data.sleep.avgHoursPerNight} 小时/晚（共 ${data.sleep.totalNights || '?'} 晚）`)
   }
   if (data.heartRate?.avg) {
-    lines.push(`- 平均心率: ${Math.round(data.heartRate.avg)} bpm`)
+    const rhr = Math.round(data.heartRate.avg)
+    const range = data.heartRate.min && data.heartRate.max
+      ? `（范围 ${Math.round(data.heartRate.min)}-${Math.round(data.heartRate.max)}）`
+      : ''
+    lines.push(`- 静息心率: ${rhr} bpm${range}`)
   }
   if (data.steps != null) {
     lines.push(`- 今日步数: ${data.steps}`)
   }
   if (data.weight) {
-    lines.push(`- 体重: ${data.weight} kg`)
+    lines.push(`- 最近体重: ${data.weight} kg`)
   }
 
-  return lines.length > 1 ? lines.join('\n') : ''
+  return lines.join('\n')
+}
+
+/**
+ * Format a short summary for UI display.
+ */
+export function formatHealthSummary(data) {
+  if (!data || !Object.keys(data).length) return ''
+  const parts = []
+  if (data.sleep?.avgHoursPerNight) {
+    parts.push(`睡眠 ${data.sleep.avgHoursPerNight}h`)
+  }
+  if (data.heartRate?.avg) {
+    parts.push(`心率 ${Math.round(data.heartRate.avg)}`)
+  }
+  if (data.steps != null) {
+    parts.push(`${data.steps}步`)
+  }
+  return parts.join(' · ')
 }
