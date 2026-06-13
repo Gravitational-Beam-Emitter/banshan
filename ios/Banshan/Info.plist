@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSHealthShareUsageDescription</key>
+	<string>半山读取你的健康数据，用于分析身体变化趋势，提供个性化建议。数据不会上传。</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>半山需要写入权限以同步数据。</string>
+	<key>CFBundleName</key>
+	<string>半山</string>
+	<key>CFBundleDisplayName</key>
+	<string>半山</string>
+	<key>CFBundleIdentifier</key>
+	<string>app.banshan.ios</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>healthkit</string>
+	</array>
+</dict>
+</plist>
