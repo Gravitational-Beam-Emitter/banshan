@@ -113,13 +113,24 @@ async function submit() {
         <div class="h-4 w-3/4 bg-gray-200 rounded mb-2"></div>
         <div class="h-4 w-1/2 bg-gray-200 rounded"></div>
       </div>
-      <p v-if="streamingText" class="text-center text-xs text-gray-400">
-        已接收 {{ streamingText.length }} 字符...
-      </p>
+      <div v-if="streamingText" class="mt-4 p-4 bg-gray-100 rounded-lg">
+        <p class="text-xs text-gray-500 mb-1">
+          AI 正在思考（{{ streamingText.length }} 字符）...
+        </p>
+        <pre class="text-sm text-gray-700 whitespace-pre-wrap font-sans">{{ streamingText }}</pre>
+      </div>
     </div>
 
     <!-- Error -->
-    <p v-if="error" class="text-center text-red-500 mt-6">{{ error }}</p>
+    <div v-if="error" class="text-center mt-6">
+      <p class="text-red-500 mb-3">{{ error }}</p>
+      <button
+        class="text-sm text-green-600 hover:text-green-800 underline"
+        @click="submit"
+      >
+        重试
+      </button>
+    </div>
 
     <!-- Analysis result -->
     <ResultCard v-if="result" :result="result" class="animate-fade-in" />
