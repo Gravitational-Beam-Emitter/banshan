@@ -43,6 +43,16 @@ function remove(id, e) {
   if (expandedId.value === id) expandedId.value = null
 }
 
+function exportJson() {
+  const blob = new Blob([JSON.stringify(records.value, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '半山-历史记录-' + new Date().toISOString().slice(0, 10) + '.json'
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 function clearAll() {
   if (!window.confirm('确定要清空所有历史记录吗？')) return
   localStorage.removeItem(HISTORY_KEY)
@@ -55,13 +65,20 @@ function clearAll() {
   <div class="max-w-2xl mx-auto px-4 py-8">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-2xl font-bold">历史记录</h1>
-      <button
-        v-if="filtered.length"
-        class="text-sm text-red-500 hover:text-red-700"
-        @click="clearAll"
-      >
-        清空记录
-      </button>
+      <div v-if="filtered.length" class="flex items-center gap-3">
+        <button
+          class="text-sm text-gray-400 hover:text-gray-600 transition"
+          @click="exportJson"
+        >
+          导出
+        </button>
+        <button
+          class="text-sm text-red-500 hover:text-red-700"
+          @click="clearAll"
+        >
+          清空
+        </button>
+      </div>
     </div>
 
     <!-- Search -->

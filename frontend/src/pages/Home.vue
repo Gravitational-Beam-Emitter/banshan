@@ -1,9 +1,9 @@
 <!--
   半山项目 - Home.vue
   功能简述：首页，症状输入 + 分析结果展示
-  版本: 0.1.0
+  版本: 0.2.0
   最后修改: 2026-06-13
-  修改说明: 接入 API 调用逻辑，loading/error 状态处理，历史存储
+  修改说明: 添加示例症状引导、分析耗时显示
 -->
 <script setup>
 import { ref } from 'vue'
@@ -16,6 +16,13 @@ const loading = ref(false)
 const streamingText = ref('')
 const result = ref(null)
 const error = ref('')
+const elapsed = ref(0)
+
+const examples = [
+  '最近三天头疼，太阳穴胀痛，睡眠不好',
+  '吃完饭后胃胀，偶尔反酸，持续一周',
+  '右膝盖上下楼时疼，不肿，两个月了',
+]
 
 const HISTORY_KEY = 'banshan_history'
 
@@ -50,6 +57,8 @@ async function submit() {
   streamingText.value = ''
   error.value = ''
   result.value = null
+  elapsed.value = 0
+  const startTime = Date.now()
 
   try {
     const data = await analyzeSymptomStream(text, (content) => {
@@ -74,6 +83,7 @@ async function submit() {
     console.error(e)
   } finally {
     loading.value = false
+    elapsed.value = ((Date.now() - startTime) / 1000).toFixed(1)
   }
 }
 </script>
@@ -133,11 +143,28 @@ async function submit() {
     </div>
 
     <!-- Analysis result -->
-    <ResultCard v-if="result" :result="result" class="animate-fade-in" />
+    <div v-if="result" class="animate-fade-in">
+      <p v-if="elapsed" class="text-center text-xs text-gray-400 mt-2">
+        分析耗时 {{ elapsed }} 秒
+      </p>
+      <ResultCard :result="result" />
+    </div>
 
     <!-- Empty state hint -->
-    <p v-if="!result && !loading && !error" class="text-center text-gray-400 mt-6">
-      输入症状后点击「开始分析」，AI 会给出三色评估
-    </p>
+    <div v-if="!result && !loading && !error" class="text-center mt-8">
+      <p class="text-gray-400 mb-4">
+        输入症状后点击「开始分析」，AI 会给出三色评估
+      </p>
+      <div class="flex flex-wrap justify-center gap-2">
+        <button
+          v-for="(ex, i) in examples"
+          :key="i"
+          class="text-sm text-gray-500 bg-white border rounded-full px-4 py-1.5 hover:border-green-400 hover:text-green-600 transition"
+          @click="symptom = ex"
+        >
+          {{ ex }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
